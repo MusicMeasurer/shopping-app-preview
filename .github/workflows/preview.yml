@@ -1,0 +1,62 @@
+name: Publish isolated ShoppingApp iPhone preview
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: shopping-preview-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout E3 source
+        uses: actions/checkout@v4
+        with:
+          repository: MusicMeasurer/shopping-app
+          ref: feature/e3-cloud-auth
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Isolate PWA scope
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('vite.config.ts')
+          s = p.read_text()
+          assert s.count('/shopping-app/') >= 4
+          p.write_text(s.replace('/shopping-app/', '/shopping-app-preview/'))
+          PY
+      - name: Test and build against disposable lab
+        env:
+          VITE_SUPABASE_URL: https://gmrqeubhotjpmtwokfeq.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_iN1Oxw6kkBK0eEjvFy3YZw_4wWpwRJ3
+        run: |
+          npm test
+          npm run build
+          grep -q '/shopping-app-preview/' dist/manifest.webmanifest
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy preview only
+        id: deployment
+        uses: actions/deploy-pages@v4
