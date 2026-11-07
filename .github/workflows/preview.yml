@@ -38,12 +38,13 @@ jobs:
           assert s.count('/shopping-app/') >= 4
           p.write_text(s.replace('/shopping-app/', '/shopping-app-preview/'))
           PY
-      - name: Test and build against disposable lab
+      - name: Unit tests (without cloud configuration, as in source CI)
+        run: npm test
+      - name: Build against disposable Supabase lab
         env:
           VITE_SUPABASE_URL: https://gmrqeubhotjpmtwokfeq.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_iN1Oxw6kkBK0eEjvFy3YZw_4wWpwRJ3
         run: |
-          npm test
           npm run build
           grep -q '/shopping-app-preview/' dist/manifest.webmanifest
       - uses: actions/configure-pages@v5
