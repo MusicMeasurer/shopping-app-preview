@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: MusicMeasurer/shopping-app
-          ref: feature/e4-lists-archive
+          ref: feature/e4-ui-order-fixes
           path: e4-source
           persist-credentials: false
       - name: Build E4 in independent PWA scope
