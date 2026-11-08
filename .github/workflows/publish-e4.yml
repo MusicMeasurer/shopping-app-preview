@@ -1,0 +1,47 @@
+name: Publish E4 preview
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: e4-preview-pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tested E4 source
+        uses: actions/checkout@v4
+        with:
+          repository: MusicMeasurer/shopping-app
+          ref: feature/e4-ui-order-fixes
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Configure isolated preview path
+        run: sed -i 's#/shopping-app/#/shopping-app-preview/e4/#g' vite.config.ts
+      - run: npm test
+      - run: npm run build
+      - name: Assemble Pages artifact
+        run: |
+          mkdir -p _site/e4
+          cp -R dist/. _site/e4/
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  deploy:
+    environment:
+      name: github-pages
+      url: https://musicmeasurer.github.io/shopping-app-preview/e4/
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/deploy-pages@v4
