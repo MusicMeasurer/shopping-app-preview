@@ -51,7 +51,7 @@ jobs:
         run: |
           mkdir -p /tmp/e3-preview-dist
           cp -a dist/. /tmp/e3-preview-dist/
-      - name: Checkout E4 source
+      - name: Checkout tested E4 source (menu and touch sorting)
         uses: actions/checkout@v4
         with:
           repository: MusicMeasurer/shopping-app
