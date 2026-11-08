@@ -47,6 +47,38 @@ jobs:
         run: |
           npm run build
           grep -q '/shopping-app-preview/' dist/manifest.webmanifest
+      - name: Build isolated E4 preview alongside E3
+        run: |
+          mkdir -p /tmp/e3-preview-dist
+          cp -a dist/. /tmp/e3-preview-dist/
+      - name: Checkout E4 source
+        uses: actions/checkout@v4
+        with:
+          repository: MusicMeasurer/shopping-app
+          ref: feature/e4-lists-archive
+          path: e4-source
+          persist-credentials: false
+      - name: Build E4 in independent PWA scope
+        working-directory: e4-source
+        run: |
+          npm ci
+          npm test
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('vite.config.ts')
+          s = p.read_text()
+          assert s.count('/shopping-app/') >= 4
+          p.write_text(s.replace('/shopping-app/', '/shopping-app-preview/e4/'))
+          PY
+          npm run build
+          grep -q '/shopping-app-preview/e4/' dist/manifest.webmanifest
+      - name: Combine E3 and E4 without replacing E3
+        run: |
+          mkdir -p dist/e4
+          cp -a e4-source/dist/. dist/e4/
+          test -f dist/index.html
+          test -f dist/e4/index.html
+          test -f dist/e4/manifest.webmanifest
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
