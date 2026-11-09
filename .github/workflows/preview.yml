@@ -51,11 +51,11 @@ jobs:
         run: |
           mkdir -p /tmp/e3-preview-dist
           cp -a dist/. /tmp/e3-preview-dist/
-      - name: Checkout tested E4 source (iOS menu flicker fix)
+      - name: Checkout tested E4 source (compact cards and navigation)
         uses: actions/checkout@v4
         with:
           repository: MusicMeasurer/shopping-app
-          ref: feature/e4-ui-order-fixes
+          ref: feature/e4-compact-navigation
           path: e4-source
           persist-credentials: false
       - name: Build E4 in independent PWA scope
