@@ -51,11 +51,11 @@ jobs:
         run: |
           mkdir -p /tmp/e3-preview-dist
           cp -a dist/. /tmp/e3-preview-dist/
-      - name: Checkout tested E4 source (compact cards and navigation)
+      - name: Checkout tested E4 source (swipe and quick list actions)
         uses: actions/checkout@v4
         with:
           repository: MusicMeasurer/shopping-app
-          ref: feature/e4-compact-navigation
+          ref: feature/e4-swipe-panel-actions
           path: e4-source
           persist-credentials: false
       - name: Build E4 in independent PWA scope
