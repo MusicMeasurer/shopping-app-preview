@@ -83,7 +83,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: MusicMeasurer/shopping-app
-          ref: 54bcaa90f82754f0bb9b67203f0560b718087d47
+          ref: c99ec46f63c8dd3e4f9324db150fce4bbc1a5326
           path: integration-source
           persist-credentials: false
       - name: Build integrated iPhone acceptance preview
