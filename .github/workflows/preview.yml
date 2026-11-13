@@ -79,6 +79,42 @@ jobs:
           test -f dist/index.html
           test -f dist/e4/index.html
           test -f dist/e4/manifest.webmanifest
+      - name: Checkout verified E3-E4 integration
+        uses: actions/checkout@v4
+        with:
+          repository: MusicMeasurer/shopping-app
+          ref: 54bcaa90f82754f0bb9b67203f0560b718087d47
+          path: integration-source
+          persist-credentials: false
+      - name: Build integrated iPhone acceptance preview
+        working-directory: integration-source
+        env:
+          VITE_SUPABASE_URL: https://gmrqeubhotjpmtwokfeq.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_iN1Oxw6kkBK0eEjvFy3YZw_4wWpwRJ3
+        run: |
+          npm ci
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('vite.config.ts')
+          source = p.read_text()
+          assert source.count('/shopping-app/') >= 4
+          p.write_text(source.replace('/shopping-app/', '/shopping-app-preview/integration/'))
+          PY
+          npm run build
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('dist/manifest.webmanifest').read_text())
+          expected = '/shopping-app-preview/integration/'
+          assert all(manifest[key] == expected for key in ('id', 'start_url', 'scope'))
+          assert expected + 'index.html' in Path('dist/sw.js').read_text()
+          PY
+          git rev-parse HEAD > dist/revision.txt
+      - name: Add integration preview beside existing previews
+        run: |
+          mkdir -p dist/integration
+          cp -a integration-source/dist/. dist/integration/
+          test -f dist/integration/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
