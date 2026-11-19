@@ -18,67 +18,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout E3 source
-        uses: actions/checkout@v4
-        with:
-          repository: MusicMeasurer/shopping-app
-          ref: feature/e3-cloud-auth
-          persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - run: npm ci
-      - name: Isolate PWA scope
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('vite.config.ts')
-          s = p.read_text()
-          assert s.count('/shopping-app/') >= 4
-          p.write_text(s.replace('/shopping-app/', '/shopping-app-preview/'))
-          PY
-      - name: Unit tests (without cloud configuration, as in source CI)
-        run: npm test
-      - name: Build against disposable Supabase lab
-        env:
-          VITE_SUPABASE_URL: https://gmrqeubhotjpmtwokfeq.supabase.co
-          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_iN1Oxw6kkBK0eEjvFy3YZw_4wWpwRJ3
-        run: |
-          npm run build
-          grep -q '/shopping-app-preview/' dist/manifest.webmanifest
-      - name: Build isolated E4 preview alongside E3
-        run: |
-          mkdir -p /tmp/e3-preview-dist
-          cp -a dist/. /tmp/e3-preview-dist/
-      - name: Checkout tested E4 source (accessibility and archive safeguards)
-        uses: actions/checkout@v4
-        with:
-          repository: MusicMeasurer/shopping-app
-          ref: feature/e4-accessibility-archive-fixes
-          path: e4-source
-          persist-credentials: false
-      - name: Build E4 in independent PWA scope
-        working-directory: e4-source
-        run: |
-          npm ci
-          npm test
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('vite.config.ts')
-          s = p.read_text()
-          assert s.count('/shopping-app/') >= 4
-          p.write_text(s.replace('/shopping-app/', '/shopping-app-preview/e4/'))
-          PY
-          npm run build
-          grep -q '/shopping-app-preview/e4/' dist/manifest.webmanifest
-      - name: Combine E3 and E4 without replacing E3
-        run: |
-          mkdir -p dist/e4
-          cp -a e4-source/dist/. dist/e4/
-          test -f dist/index.html
-          test -f dist/e4/index.html
-          test -f dist/e4/manifest.webmanifest
       - name: Checkout verified E3-E4 integration
         uses: actions/checkout@v4
         with:
@@ -86,6 +25,11 @@ jobs:
           ref: ec9b1b52840a6710b463649976b03ed57c1efb17
           path: integration-source
           persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: integration-source/package-lock.json
       - name: Build integrated iPhone acceptance preview
         working-directory: integration-source
         env:
@@ -110,11 +54,14 @@ jobs:
           assert expected + 'index.html' in Path('dist/sw.js').read_text()
           PY
           git rev-parse HEAD > dist/revision.txt
-      - name: Add integration preview beside existing previews
+      - name: Assemble only the integration preview
         run: |
           mkdir -p dist/integration
           cp -a integration-source/dist/. dist/integration/
           test -f dist/integration/index.html
+          test -f dist/integration/revision.txt
+          test ! -e dist/index.html
+          test ! -e dist/e4
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
