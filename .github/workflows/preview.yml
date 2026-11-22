@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: MusicMeasurer/shopping-app
-          ref: c7ee34bb8c58a499df51a30c7b5a0a04d9da3278
+          ref: ea5128d4fde62b59db2ad0f2b2c9f824b895bb21
           path: integration-source
           persist-credentials: false
       - uses: actions/setup-node@v4
