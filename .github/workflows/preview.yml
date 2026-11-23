@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: MusicMeasurer/shopping-app
-          ref: dd9ffd6ef492ccd952393c2c19c6d66df2a467dc
+          ref: f7fdb392f3745d06091d505676ffa675b00ca9bf
           path: integration-source
           persist-credentials: false
       - uses: actions/setup-node@v4
@@ -33,6 +33,7 @@ jobs:
       - name: Build integrated iPhone acceptance preview
         working-directory: integration-source
         env:
+          VITE_ACCOUNT_DELETION: 'true'
           VITE_ACCOUNT_EMAIL_CODES: 'true'
           VITE_SUPABASE_URL: https://gmrqeubhotjpmtwokfeq.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_iN1Oxw6kkBK0eEjvFy3YZw_4wWpwRJ3
