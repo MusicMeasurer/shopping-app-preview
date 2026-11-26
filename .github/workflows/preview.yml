@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: MusicMeasurer/shopping-app
-          ref: 5a6bf7ab17ac96611c45375777cf39a4d0320cba
+          ref: ea839c5f1ea9199c2d2048d757ace4e074a01ca7
           path: integration-source
           persist-credentials: false
       - uses: actions/setup-node@v4
@@ -34,7 +34,7 @@ jobs:
         working-directory: integration-source
         env:
           VITE_ACCOUNT_DELETION: 'true'
-          VITE_ACCOUNT_EMAIL_CODES: 'true'
+          VITE_ACCOUNT_EMAIL_CODES: 'false'
           VITE_SYNC_DIAGNOSTICS: 'true'
           VITE_SUPABASE_URL: https://gmrqeubhotjpmtwokfeq.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_iN1Oxw6kkBK0eEjvFy3YZw_4wWpwRJ3
